@@ -1,0 +1,773 @@
+USE cybersecurity;
+
+
+#update trigger
+Create table backup_severity (
+ID int not null ,
+location varchar(30) not null,
+changed_on datetime default null,
+action varchar(30) default null
+);
+
+drop table backup_severity;
+
+select * from backup_severity;
+
+
+
+DELIMITER $$
+CREATE TRIGGER updateseverity
+AFTER UPDATE ON severity_map
+FOR EACH ROW 
+BEGIN
+INSERT INTO backup_severity
+SET action = 'update',
+ID = OLD.severity_map_ID,
+location = OLD.location,
+changed_on = NOW();      
+END$$
+DELIMITER ;
+
+
+Drop trigger updateseverity;
+
+
+select * from severity_map;
+select * from backup_severity;
+
+UPDATE severity_map
+SET location= 'Boston'
+WHERE severity_map_ID =2123 ;
+
+
+
+
+
+select * from severity_map;
+Select * from backup_severity ; 
+
+
+SHOW TRIGGERS WHERE 'table' = 'severity_map';
+
+
+#Delete trigger
+
+Create table backup_Application(
+ID int not null,
+Name varchar(30) not null,
+Type varchar(30) not null,
+criticality varchar(30) not null,
+changed_on datetime default null
+);
+
+Drop table backup_vulnerability_channel;
+
+select * from backup_Application;
+
+
+DELIMITER $$
+CREATE TRIGGER After_delete_Application
+AFTER DELETE ON Application
+FOR EACH ROW
+BEGIN
+INSERT INTO backup_Application VALUES 
+(OLD.Application_ID,
+OLD.Application_Name,OLD.Application_type,
+OLD.criticality,
+NOW());
+END$$
+DELIMITER ;
+
+
+DELETE FROM Application
+WHERE Application_ID=50;
+SET foreign_key_checks=0;
+
+DELETE FROM application
+where application_ID =51;
+select * from application;
+select*from backup_application ;
+
+USE cybersecurity;
+
+
+
+#insert trigger
+CREATE table insert_mitigation(
+ID varchar(30) not null,
+level varchar(30) not null,
+Pin varchar(30) not null,
+status varchar(30) not null,
+antispyware varchar(30) not null,
+changed_on datetime default null
+);
+drop table insert_mitigation;
+
+Delimiter $$
+CREATE TRIGGER after_insert_mitigation
+after insert on mitigation_plan
+for each row
+begin
+insert into insert_mitigation values
+(new.mitigation_ID,
+new.mitigation_level,
+new.RSA_Secure_Pin,
+new.device_status,
+new.anti_spyware,
+now()
+);
+END$$
+DELIMITER ;
+
+select * from mitigation_plan ;
+
+INSERT INTO mitigation_plan values
+('MITID100','3','STID787388','Active','Norton');
+
+SELECT * FROM insert_mitigation;
+
+
+
+
+
+use cybersecurity;
+
+
+select 
+    Application.Application_Name,
+    Vulnerability.Vulnerability_Name
+from
+    application
+        inner join
+    Vulnerability ON Vulnerability.Application_Application_ID = Application.Application_ID
+order by Application.Application_Name desc;
+
+
+
+
+select 
+    *
+from
+    outlook_email;
+
+
+select 
+    *
+from
+    severity_map; where location = 'Eloy, AZ';
+
+
+
+select 
+    *
+from
+    incident_history;
+
+
+########Join1
+
+select 
+    vulnerability.Vulnerability_Name,
+    vulnerability.Severity_Level,
+    vulnerability.application_application_ID,
+    severity_map.zip,
+    system_finding.Incoming_IP address
+from
+    vulnerability
+        inner join
+    severity_map ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+        inner join
+    system_finding ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+group by severity_map.zip
+having vulnerability.Severity_Level = 'High';
+
+
+
+
+
+########Join2
+
+
+select 
+    *
+from
+    vulnerability
+        inner join
+    severity_map ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+        inner join
+    system_finding ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+group by severity_map.zip
+having vulnerability.Severity_Level = 'High';
+
+
+
+
+########Join3
+
+
+select 
+    *
+from
+    vulnerability
+        inner join
+    severity_map ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+        inner join
+    system_finding ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+group by severity_map.zip
+having vulnerability.Severity_Level = 'low'
+    OR vulnerability.Severity_Level = 'medium';
+
+
+
+
+########Join4
+
+select 
+    *
+from
+    vulnerability
+        inner join
+    severity_map ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+        inner join
+    system_finding ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+group by severity_map.zip
+having vulnerability.Severity_Level = 'High';
+
+
+
+
+
+########Join5
+
+select 
+    *
+from
+    vulnerability
+        inner join
+    severity_map ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+        inner join
+    system_finding ON severity_map.Vulnerability_Vulnerability_ID = vulnerability.Vulnerability_ID
+where
+    vulnerability.Severity_Level = 'High'
+order by Vulnerability_ID desc;
+
+
+
+########View1
+
+
+CREATE VIEW Hacker_Details AS
+    SELECT 
+        System_Finding.Pseudonym,
+        Incident_History.Incident_Location,
+        system_finding.Incoming_IP
+    FROM
+        System_Finding
+            inner join
+        Incident_History ON System_Finding.Incident_History_ID = Incident_History.Incident_History_ID
+    group by Pseudonym;
+
+
+select * from Hacker_Details;
+
+drop view hacker_Details;
+
+
+########Alternate view
+
+CREATE VIEW Hacker_Details AS
+    SELECT 
+        System_Finding.Pseudonym,
+        Incident_History.Incident_Location,
+        system_finding.Incoming_IP,
+        incident_history.Last_Detected
+    FROM
+        System_Finding
+            inner join
+        Incident_History ON System_Finding.Incident_History_ID = Incident_History.Incident_History_ID
+    group by Pseudonym;
+
+
+select *from hacker_details;
+
+
+
+
+########Alternate Join
+
+Select 
+    Incident_History.Last_Detected,
+    Incident_History.First_Detected,
+    System_Finding.Incoming_IP
+from
+    Incident_History
+        inner join
+    System_Finding ON Incident_History.Incident_History_ID = System_Finding.Incident_History_ID;
+
+
+select *from incident_history;
+
+
+
+
+select 
+    *
+from
+    application;
+
+SELECT 
+    Application_ID, Application_Name
+FROM
+    Application
+WHERE
+    Application_Name IN (SELECT 
+            Application_Name
+        FROM
+            Application
+        WHERE
+            Application_Type = 'Finanacial');
+
+
+
+############View2
+
+create view genuine_email_rec AS
+    select 
+        *
+    from
+        outlook_email
+    where
+        threat_flag = 0;
+
+
+
+select 
+    *
+from
+    genuine_email_rec;
+
+
+
+select 
+    *
+from
+    outlook_email;
+
+
+
+
+
+
+##########transaction1
+
+
+START TRANSACTION ;
+savepoint sp_1;
+UPDATE Outlook_Email 
+SET 
+    Email_ID = 'team10@gmail.comm'
+WHERE
+    Event_ID = 1600;
+SAVEPOINT sp1;
+UPDATE Outlook_Email 
+SET 
+    Email_ID = 'TEAM_8@gmail.comm'
+WHERE
+    Event_ID = 1601;
+
+SELECT 
+    *
+FROM
+    Outlook_Email;
+ROLLBACK TO SAVEPOINT sp1;
+COMMIT;
+
+SELECT 
+    *
+FROM
+    Outlook_Email;
+ROLLBACK;
+
+
+
+
+########transaction2
+
+
+START TRANSACTION ;
+savepoint sp_2;
+UPDATE Vulnerability 
+SET 
+    Sys_Damage_Property = 'Data loss'
+WHERE
+    Exposure_Time > 50
+        && Severity_Level = 'medium';
+SAVEPOINT sp2;
+UPDATE Vulnerability 
+SET 
+    Sys_Damage_Property = 'Password compromised'
+WHERE
+    Exposure_Time < 30
+        && Severity_Level = 'Low';
+SELECT 
+    *
+FROM
+    Vulnerability
+where
+    Severity_Level = 'Medium';
+ROLLBACK TO SAVEPOINT sp2;
+COMMIT;
+
+
+SELECT 
+    *
+FROM
+    Vulnerability
+where
+    Severity_Level = 'Low';
+ROLLBACK;
+
+
+
+
+
+
+##################Add user previleges
+
+
+create user 'Admin'@'localhost' identified by 'Admin';
+create user 'Employee'@'localhost' identified by 'Emp';
+create user 'RSA'@'localhost' identified by 'RSA';
+
+grant All privileges on cybersecurity.*  to 'Admin'@'localhost';
+grant select, update,insert on cybersecurity.*  to 'RSA'@'localhost';
+grant all  on cybersecurity.Outlook_Email to 'Employee'@'localhost';
+
+select host, user from mysql.user;
+
+
+drop user 'Adn'@'localhost';
+
+drop user 'RSA'@'localhost';
+drop user 'Employee'@'localhost';
+
+
+
+#Subquery 01
+
+select 
+    vulnerability.severity_level,
+    vulnerability.vulnerability_name,
+    Application.Application_Name
+from
+    vulnerability
+        right outer join
+    application ON vulnerability.Application_Application_ID = application.application_id
+where
+    (vulnerability.severity_level = 'High')
+        && (application.Application_Type = (select 
+            Application_Type
+        from
+            Application
+        where
+            Application.Outlook_Email_Event_ID = '1600'));
+
+
+
+
+
+
+
+select * from cybersecurity.rsa_security_team;
+
+update cybersecurity.rsa_security_team 
+set Security_Team_Location = 'phoenix,AZ'
+ where security_team_ID =245685;
+
+
+
+# indexes creation
+
+Create index Emp_Search on Employee(Employee_Name);
+create index hacker_search on System_Finding (Pseudonym);
+
+
+select * from Employee where employee_name = 'Zorina Abreu';
+
+
+
+#Stored procedure:
+
+create user 'Adn'@'localhost' identified by 'Adn';
+grant select, update,insert on cybersecurity.*  to 'Adn'@'localhost';
+
+CREATE PROCEDURE Vulnerabilitydetails()
+SELECT  Vulnerability_ID,vulnerability_Name,exposure_name,software_affected,incident_location
+FROM SYSTEM_FINDING
+INNER JOIN Vulnerability
+ON Vulnerability.vulnerability_ID=system_finding.vulnerability_vulnerability_ID
+INNER JOIN  INCIDENT_HISTORY
+ON  system_finding.Incident_History_ID= INCIDENT_HISTORY.Incident_History_ID;
+grant execute on procedure Vulnerabilitydetails to 'Adn'@'localhost';
+
+
+CALL Vulnerabilitydetails();
+
+DROP PROCEDURE Vulnerabilitydetails;
+
+
+
+# stored procdure two
+
+
+CREATE PROCEDURE Asset_Related_Vulnerability()
+SELECT  Assets_Linked.Asset_Name,Assets_Linked.Asset_Type,Vulnerability.Vulnerability_Name, Vulnerability.Sys_Damage_Property
+FROM Assets_Linked
+INNER JOIN Vulnerability
+ON Vulnerability.Assets_Linked_Asset_ID=Assets_Linked.Asset_ID
+where vulnerability.Severity_Level='high';
+
+
+
+CALL Asset_Related_Vulnerability();
+
+drop procedure Asset_Related_Vulnerability;
+
+
+
+grant execute on procedure Vulnerabilitydetails to 'Admin'@'localhost';
+
+
+
+
+
+
+
+
+
+
+
+select * from customer;
+
+
+select * from web_application cross join  customer;
+
+#####Inner join
+SELECT customer.Customer_ID, customer.Name, web_application.Application_ID  FROM customer 
+inner join web_application on web_application.Application_ID = customer.Web_Application_Application_ID
+group by customer.Name having customer.name IN ('Grant Boyer', 'Ralph Herman', 'Addison Ortiz', 'Edward Lowe', 'Colt Dejesus')
+order by customer.name desc;
+
+#### left outer join
+
+SELECT *  FROM store 
+left join Staff on Store.Store_ID = Staff.Store_Store_ID;
+
+
+##### Right outer join
+
+
+SELECT *  FROM store 
+right join Staff on Store.Store_ID = Staff.Store_Store_ID;
+
+
+######Full join
+
+
+SELECT *  FROM store 
+full join Staff on Store.Store_ID = Staff.Store_Store_ID;
+
+
+
+Select c.Customer_ID, c.Name, c.Email from customer c
+where c.Customer_ID IN (412, 353, 383, 379, 372) group by c.Name having avg(Customer_ID) < 400  order by c.email desc;
+
+
+### SQL functions
+
+select min(customer_ID)
+from customer;
+
+select upper(Name)
+from customer;
+
+select sum(product_ID) as total
+from product;
+
+Select Avg(hardware_ID)
+from hardware_assets;
+
+select max(staff_ID)
+from staff;
+
+select lower(name)
+from customer
+where customer_ID=435;
+
+select abs(customer_ID)
+from customer
+where customer_ID=435;
+
+select count(*)
+from product;
+
+select min(staff_ID)
+from staff;
+
+
+######subqueries
+
+select * from Web_Application where
+Application_ID IN ( select Application_ID from Web_Application 
+where criticality = 'high');
+
+
+
+
+##################Add user previleges
+
+
+create user 'Admin1'@'localhost' identified by 'Admin1';
+create user 'Developer'@'localhost' identified by 'Developer';
+create user 'Tester'@'localhost' identified by 'Tester';
+create user 'User'@'localhost' identified by 'User';
+
+grant All privileges on retail_store.*  to 'Admin1'@'localhost';
+
+
+grant all  on retail_store.web_application to 'Developer'@'localhost';
+grant all on retail_store.Hardware_Assets to 'Tester'@'localhost';
+grant all on retail_store.Customer to 'User'@'localhost';
+
+select host, user from mysql.user;
+
+
+drop user 'Admin1'@'localhost';
+
+drop user 'Developer'@'localhost';
+drop user 'Tester'@'localhost';
+drop user 'User'@'localhost';
+
+
+##### k) view operation 
+
+###1, 2 simple
+create view product_manufacturer as
+select make from product; 
+
+select * from product_manufacturer;
+
+
+create view problem_solution as
+select solution from problem_repository;
+
+select * from problem_solution;
+
+
+########View 3
+create view customer_application as
+SELECT customer.Customer_ID, customer.Name, web_application.Application_ID  FROM customer 
+inner join web_application on web_application.Application_ID = customer.Web_Application_Application_ID
+group by customer.Name having customer.name IN ('Grant Boyer', 'Ralph Herman', 'Addison Ortiz', 'Edward Lowe', 'Colt Dejesus')
+order by customer.name desc;
+
+select * from customer_application;
+
+
+
+# transaction
+SET foreign_key_checks=0;
+
+Start Transaction;
+UPDATE STAFF
+SET STAFF_ID = 22222
+WHERE Staff_ID=1077;
+savepoint sp1;
+UPDATE STAFF
+SET STAFF_ID = 3333
+where staff_ID =1077;
+rollback to savepoint sp1;
+Commit;
+
+select * from staff;
+rollback to savepoint sp1;
+commit;
+
+Create index Problem_sol on problem_repository(description);
+
+create table problem_backup
+(problem_ID varchar(20),
+description varchar(20),
+changed_on datetime default null
+);
+
+drop table problem_backup;
+
+DELIMITER $$
+CREATE TRIGGER update_backup
+AFTER UPDATE ON problem_repository
+FOR EACH ROW 
+BEGIN
+INSERT INTO problem_backup
+SET action = 'update',
+Problem_ID=OLD.problem_ID,
+description=OLD.description;
+END$$
+DELIMITER ;
+
+
+
+
+
+###trigger2
+
+#update trigger
+
+create table problem_backup1
+(problem_ID varchar(20),
+description varchar(20),
+changed_on datetime default null
+);
+
+
+drop table problem_backup1;
+
+
+DELIMITER $$
+CREATE TRIGGER after_insert_backup
+AFTER INSERT ON problem_repository
+FOR EACH ROW
+BEGIN
+insert into insert_mitigation values
+(new.Problem_ID,
+new.Description,
+now());
+END$$
+DELIMITER ;
+
+
+
+
+#Stored procedure:
+
+create user 'Adn'@'localhost' identified by 'Adn';
+grant select, update,insert on retail_store.*  to 'Adn'@'localhost';
+
+CREATE PROCEDURE CustomerDetails()
+SELECT  customer.Customer_ID,customer.name, customer.email, store.address, store.city
+FROM customer
+INNER JOIN Store
+ON store.Store_ID = customer.Store_Store_ID;
+grant execute on procedure Vulnerabilitydetails to 'Adn'@'localhost';
+
+CALL CustomerDetails();
+
+
+
+SELECT  c.Customer_ID,c.name, c.email, s.address, s.city
+FROM retail_store.customer AS c
+INNER JOIN retail_store.Store AS s
+ON s.Store_ID = c.Store_Store_ID;
+
+
+
